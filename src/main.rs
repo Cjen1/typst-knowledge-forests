@@ -308,9 +308,34 @@ fn write_manifest(generated_dir: &Path, records: &BTreeMap<String, NoteRecord>) 
 }
 
 fn write_transclusions(generated_dir: &Path, input_dir: &Path, notes: &[Note]) -> Result<()> {
-    let mut out = String::from(
-        "#let notelink(id, text: none) = {\n  let label = if text == none { id } else { text }\n  link(id + \".html\")[#label]\n}\n#let transclude(id, mode: \"inline\") = notelink(id)\n#let transclusion-content(id) = {\n",
-    );
+    let mut out = String::new();
+    out.push_str("#import \"manifest.typ\": notes\n");
+    out.push_str("#let kt-max-transclusion-depth = 10\n");
+    out.push_str("#let note-title(id) = if id in notes { notes.at(id).title } else { id }\n");
+    out.push_str("#let notelink(id, text: none) = {\n");
+    out.push_str("  let label = if text == none { note-title(id) } else { text }\n");
+    out.push_str("  link(id + \".html\")[#label]\n");
+    out.push_str("}\n");
+    out.push_str("#let transclusion-content(id, depth: kt-max-transclusion-depth) = {\n");
+    // Define a local `transclude` that decrements depth, preventing infinite recursion
+    out.push_str("  let transclude(tid, mode: \"inline\") = {\n");
+    out.push_str("    if depth <= 0 {\n");
+    out.push_str("      notelink(tid)\n");
+    out.push_str("    } else if mode == \"open\" {\n");
+    out.push_str("      html.elem(\"kt-transclusion-open\")[#notelink(tid, text: \"Open: \" + note-title(tid))]\n");
+    out.push_str("    } else if mode == \"title-open\" {\n");
+    out.push_str("      html.elem(\"kt-transclusion-title-open\")[#notelink(tid, text: note-title(tid))]\n");
+    out.push_str("    } else if mode == \"title-inline\" {\n");
+    out.push_str("      html.elem(\"kt-transclusion-title-inline\")[\n");
+    out.push_str("        *#note-title(tid)*\n");
+    out.push_str("        #transclusion-content(tid, depth: depth - 1)\n");
+    out.push_str("      ]\n");
+    out.push_str("    } else {\n");
+    out.push_str("      html.elem(\"kt-transclusion-inline\")[\n");
+    out.push_str("        #transclusion-content(tid, depth: depth - 1)\n");
+    out.push_str("      ]\n");
+    out.push_str("    }\n");
+    out.push_str("  }\n");
 
     for (idx, note) in notes.iter().enumerate() {
         let keyword = if idx == 0 { "if" } else { "else if" };
