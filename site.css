@@ -1,0 +1,11 @@
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 2rem auto;
+  max-width: 44rem;
+  padding: 0 1rem;
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  line-height: 1.5;
+}
