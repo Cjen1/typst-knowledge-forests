@@ -140,7 +140,6 @@ fn run_render(cli: &Cli) -> Result<()> {
         if !status.success() {
             bail!("typst compile failed for {}", page.display());
         }
-
         progress.set_message(stem.to_owned());
         progress.inc(1);
     }

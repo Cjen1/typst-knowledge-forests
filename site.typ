@@ -20,13 +20,19 @@
 #let transclude(id, mode: "inline") = {
   let title = note-title(id)
   if mode == "inline" {
-    transclusion-content(id)
+    html.elem("kt-transclusion-inline")[
+      #transclusion-content(id)
+    ]
   } else if mode == "open" {
-    notelink(id, text: "Open: " + title)
+    html.elem("kt-transclusion-open")[
+      #notelink(id, text: "Open: " + title)
+    ]
   } else if mode == "title-open" {
-    notelink(id, text: title)
+    html.elem("kt-transclusion-title-open")[
+      #notelink(id, text: title)
+    ]
   } else if mode == "title-inline" {
-    [
+    html.elem("kt-transclusion-title-inline")[
       *#title*
       #transclusion-content(id)
     ]
@@ -41,17 +47,24 @@
     panic("Unknown note id: " + id)
   }
 
-  set page(width: auto, height: auto, margin: (x: 24pt, y: 24pt))
-
-  [
-    = #entry.title
+  html.elem("link", attrs: (rel: "stylesheet", href: "site.css"))
+  html.elem("kt-page", attrs: (data-note-id: id))[
+    #html.elem("kt-article-header")[
+      #html.elem("kt-article-title")[#entry.title]
+    ]
     #body
 
-    #if entry.backlinks.len() > 0 [
-      == Backlinks
-      #for source in entry.backlinks [
-        - #notelink(source)
+    #if entry.backlinks.len() > 0 {
+      html.elem("kt-backlinks")[
+        #html.elem("kt-backlinks-header")[Backlinks]
+        #html.elem("kt-backlinks-list")[
+          #for source in entry.backlinks {
+            html.elem("kt-backlink-item")[
+              #notelink(source)
+            ]
+          }
+        ]
       ]
-    ]
+    }
   ]
 }
