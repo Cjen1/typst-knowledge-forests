@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -14,7 +14,7 @@ fn temp_test_dir(name: &str) -> PathBuf {
     dir
 }
 
-fn write_file(path: &Path, contents: &str) {
+fn write_file(path: &std::path::Path, contents: &str) {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).expect("create parent dir");
     }
@@ -22,18 +22,18 @@ fn write_file(path: &Path, contents: &str) {
 }
 
 #[test]
-fn graph_generates_manifest_and_pages() {
+fn graph_generates_manifest_json() {
     let dir = temp_test_dir("graph");
     let notes_dir = dir.join("notes");
     let generated_dir = dir.join("generated");
 
     write_file(
         &notes_dir.join("alpha.typ"),
-        "#note-meta(id: \"alpha\", title: \"Alpha\", tags: (\"a\",))\n#notelink(\"beta\")\nAlpha body.\n",
+        "#import \"../site.typ\": *\n#kt-note(id: \"alpha\", title: \"Alpha\", tags: (\"a\",), _ => [\nAlpha body.\n])\n",
     );
     write_file(
         &notes_dir.join("beta.typ"),
-        "#note-meta(id: \"beta\", title: \"Beta\", tags: (\"b\",))\nBeta body.\n",
+        "#import \"../site.typ\": *\n#kt-note(id: \"beta\", title: \"Beta\", tags: (\"b\",), _ => [\nBeta body.\n])\n",
     );
 
     let status = Command::new(env!("CARGO_BIN_EXE_typst-knowledge-trees"))
@@ -47,19 +47,16 @@ fn graph_generates_manifest_and_pages() {
         .expect("run graph");
     assert!(status.success());
 
-    let manifest = fs::read_to_string(generated_dir.join("manifest.typ")).expect("read manifest");
-    assert!(manifest.contains("alpha"));
-    assert!(manifest.contains("beta"));
-    assert!(manifest.contains("backlinks: (\"alpha\",)"));
-
-    assert!(generated_dir.join("pages/alpha.typ").exists());
-    assert!(generated_dir.join("pages/beta.typ").exists());
+    let manifest = fs::read_to_string(generated_dir.join("manifest.json")).expect("read manifest");
+    assert!(manifest.contains("\"id\": \"alpha\""));
+    assert!(manifest.contains("\"id\": \"beta\""));
+    assert!(manifest.contains("\"source\": \"notes/alpha.typ\""));
 
     fs::remove_dir_all(dir).expect("cleanup temp dir");
 }
 
 #[test]
-fn build_uses_typst_binary_and_writes_output_html() {
+fn build_passes_kt_note_id_input() {
     let dir = temp_test_dir("build");
     let notes_dir = dir.join("notes");
     let dist_dir = dir.join("dist");
@@ -69,12 +66,9 @@ fn build_uses_typst_binary_and_writes_output_html() {
 
     write_file(
         &notes_dir.join("alpha.typ"),
-        "#note-meta(id: \"alpha\", title: \"Alpha\", tags: (\"a\",))\nAlpha body.\n",
+        "#import \"../site.typ\": *\n#kt-note(id: \"alpha\", title: \"Alpha\", tags: (\"a\",), _ => [\nAlpha body.\n])\n",
     );
-    write_file(
-        &dir.join("site.typ"),
-        "#import \"generated/manifest.typ\": notes\n#import \"generated/transclusions.typ\": transclusion-content\n#let note-meta(id: \"\", title: \"\", tags: ()) = none\n#let render-page(id, body) = body\n#let notelink(id, text: none) = [#id]\n#let transclude(id, mode: \"inline\") = [#id]\n",
-    );
+
     write_file(
         &fake_typst,
         &format!(
@@ -109,10 +103,10 @@ fn build_uses_typst_binary_and_writes_output_html() {
     assert!(dist_dir.join("alpha.html").exists());
 
     let invocations = fs::read_to_string(log_path).expect("read typst invocation log");
+    assert!(invocations.contains("--input kt-note-id=alpha"));
     assert!(invocations.contains("--features html"));
-    assert!(invocations.contains("--root ."));
     assert!(invocations.contains("--format html"));
-    assert!(generated_dir.join("manifest.typ").exists());
+    assert!(generated_dir.join("manifest.json").exists());
 
     fs::remove_dir_all(dir).expect("cleanup temp dir");
 }

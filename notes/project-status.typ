@@ -1,4 +1,5 @@
-#note-meta(id: "architecture", title: "Architecture Index", tags: ("planning", "architecture"))
+#import "../site.typ": *
+#kt-note(id: "architecture", title: "Architecture Index", tags: ("planning", "architecture"), transclude => [
 
 This is the architecture subindex.
 
@@ -9,3 +10,4 @@ This is the architecture subindex.
 #transclude("constraints", mode: "title-open")
 #transclude("design-choices", mode: "title-open")
 #transclude("project-todos", mode: "title-open")
+])

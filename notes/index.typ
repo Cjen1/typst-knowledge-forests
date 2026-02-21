@@ -1,4 +1,5 @@
-#note-meta(id: "index", title: "Knowledge Tree Index", tags: ("root", "overview"))
+#import "../site.typ": *
+#kt-note(id: "index", title: "Knowledge Tree Index", tags: ("root", "overview"), transclude => [
 
 This is the root note for the Typst knowledge tree scaffold.
 
@@ -7,3 +8,4 @@ This is the root note for the Typst knowledge tree scaffold.
 - #notelink("architecture")
 
 #transclude("typst-machinery", mode: "title-open")
+])
