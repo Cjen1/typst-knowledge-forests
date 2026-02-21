@@ -1,6 +1,6 @@
 #import "lib.typ": *
 
-#kt-note("foo.typ", depth => [
+#kt-note("foo.typ", transclude => [
 Foo body.
-#transclude("bar.typ", depth: depth)
+#transclude("bar.typ")
 ])

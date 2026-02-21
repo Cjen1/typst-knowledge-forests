@@ -1,5 +1,5 @@
 #import "lib.typ": *
 
-#kt-note("baz.typ", depth => [
+#kt-note("baz.typ", transclude => [
 Baz body.
 ])
