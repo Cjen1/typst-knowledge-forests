@@ -3,5 +3,5 @@
 
 Some more text
 
-#transclude("inf-a", mode:"open")
+#transclude("inf-a", mode:"inline")
 ])
