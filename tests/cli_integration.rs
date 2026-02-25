@@ -26,6 +26,8 @@ fn graph_generates_manifest_json() {
     let dir = temp_test_dir("graph");
     let notes_dir = dir.join("notes");
     let generated_dir = dir.join("generated");
+    let fake_typst = dir.join("fake-typst.sh");
+    let log_path = dir.join("typst-invocations.log");
 
     write_file(
         &notes_dir.join("alpha.typ"),
@@ -35,6 +37,21 @@ fn graph_generates_manifest_json() {
         &notes_dir.join("beta.typ"),
         "#import \"../site.typ\": *\n#kt-note(id: \"beta\", title: \"Beta\", tags: (\"b\",), _ => [\nBeta body.\n])\n",
     );
+    write_file(
+        &fake_typst,
+        &format!(
+            "#!/usr/bin/env bash\nset -euo pipefail\necho \"$@\" >> \"{}\"\nif [ \"${{1:-}}\" = \"query\" ]; then\n  printf '[]'\n  exit 0\nfi\nout=\"${{@: -1}}\"\nmkdir -p \"$(dirname \"$out\")\"\nprintf '<html><head></head><body>ok</body></html>' > \"$out\"\n",
+            log_path.display()
+        ),
+    );
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mut perms = fs::metadata(&fake_typst).expect("meta").permissions();
+        perms.set_mode(0o755);
+        fs::set_permissions(&fake_typst, perms).expect("chmod");
+    }
 
     let status = Command::new(env!("CARGO_BIN_EXE_typst-knowledge-trees"))
         .current_dir(&dir)
@@ -42,6 +59,8 @@ fn graph_generates_manifest_json() {
         .arg("notes")
         .arg("--generated-dir")
         .arg("generated")
+        .arg("--typst-bin")
+        .arg(fake_typst.to_string_lossy().to_string())
         .arg("graph")
         .status()
         .expect("run graph");
@@ -51,6 +70,11 @@ fn graph_generates_manifest_json() {
     assert!(manifest.contains("\"id\": \"alpha\""));
     assert!(manifest.contains("\"id\": \"beta\""));
     assert!(manifest.contains("\"source\": \"notes/alpha.typ\""));
+    assert!(generated_dir.join("query.typ").exists());
+    assert!(generated_dir.join("metadata.json").exists());
+    let invocations = fs::read_to_string(log_path).expect("read typst invocation log");
+    assert!(invocations.contains("query"));
+    assert!(invocations.contains("--input kt-mode=query"));
 
     fs::remove_dir_all(dir).expect("cleanup temp dir");
 }
@@ -72,7 +96,7 @@ fn build_passes_kt_note_id_input() {
     write_file(
         &fake_typst,
         &format!(
-            "#!/usr/bin/env bash\nset -euo pipefail\necho \"$@\" >> \"{}\"\nout=\"${{@: -1}}\"\nmkdir -p \"$(dirname \"$out\")\"\nprintf '<html><head></head><body>ok</body></html>' > \"$out\"\n",
+            "#!/usr/bin/env bash\nset -euo pipefail\necho \"$@\" >> \"{}\"\nif [ \"${{1:-}}\" = \"query\" ]; then\n  printf '[]'\n  exit 0\nfi\nout=\"${{@: -1}}\"\nmkdir -p \"$(dirname \"$out\")\"\nprintf '<html><head></head><body>ok</body></html>' > \"$out\"\n",
             log_path.display()
         ),
     );
@@ -103,10 +127,14 @@ fn build_passes_kt_note_id_input() {
     assert!(dist_dir.join("alpha.html").exists());
 
     let invocations = fs::read_to_string(log_path).expect("read typst invocation log");
+    assert!(invocations.contains("query"));
+    assert!(invocations.contains("--input kt-mode=query"));
     assert!(invocations.contains("--input kt-note-id=alpha"));
+    assert!(invocations.contains("--input kt-mode=render"));
     assert!(invocations.contains("--features html"));
     assert!(invocations.contains("--format html"));
     assert!(generated_dir.join("manifest.json").exists());
+    assert!(generated_dir.join("metadata.json").exists());
 
     fs::remove_dir_all(dir).expect("cleanup temp dir");
 }

@@ -67,9 +67,14 @@ fn run_graph(cli: &Cli) -> Result<()> {
     let notes = discover_notes(&cli.input_dir)?;
     scan_spinner.finish_with_message(format!("Found {} notes", notes.len()));
 
-    let artifact_spinner = spinner("Writing manifest");
+    let artifact_spinner = spinner("Writing manifest and query input");
     write_manifest_json(&cli.generated_dir, &cli.input_dir, &notes)?;
-    artifact_spinner.finish_with_message("Generated manifest.json");
+    write_query_typ(&cli.generated_dir, &cli.input_dir, &notes)?;
+    artifact_spinner.finish_with_message("Generated manifest.json and query.typ");
+
+    let query_spinner = spinner("Extracting metadata");
+    write_metadata_json(cli, &cli.generated_dir)?;
+    query_spinner.finish_with_message("Generated metadata.json");
 
     Ok(())
 }
@@ -78,6 +83,12 @@ fn run_render(cli: &Cli) -> Result<()> {
     if !cli.generated_dir.join("manifest.json").exists() {
         bail!(
             "missing manifest.json in {} (run graph step first)",
+            cli.generated_dir.display()
+        );
+    }
+    if !cli.generated_dir.join("metadata.json").exists() {
+        bail!(
+            "missing metadata.json in {} (run graph step first)",
             cli.generated_dir.display()
         );
     }
@@ -103,6 +114,8 @@ fn run_render(cli: &Cli) -> Result<()> {
             .arg("html")
             .arg("--format")
             .arg("html")
+            .arg("--input")
+            .arg("kt-mode=render")
             .arg("--input")
             .arg(format!("kt-note-id={}", note.id))
             .arg(&source)
@@ -193,6 +206,46 @@ fn write_manifest_json(
     let out = format!("[\n{}\n]\n", entries.join(",\n"));
     fs::write(generated_dir.join("manifest.json"), out)
         .with_context(|| format!("writing manifest.json"))?;
+    Ok(())
+}
+
+fn write_query_typ(generated_dir: &Path, input_dir: &Path, notes: &[NoteEntry]) -> Result<()> {
+    let mut out = String::new();
+    for note in notes {
+        let source = input_dir.join(&note.file_name);
+        out.push_str(&format!("#include \"../{}\"\n", source.display()));
+    }
+    fs::write(generated_dir.join("query.typ"), out).with_context(|| format!("writing query.typ"))?;
+    Ok(())
+}
+
+fn write_metadata_json(cli: &Cli, generated_dir: &Path) -> Result<()> {
+    let query_file = generated_dir.join("query.typ");
+    let output = Command::new(&cli.typst_bin)
+        .arg("query")
+        .arg("--features")
+        .arg("html")
+        .arg("--root")
+        .arg(".")
+        .arg("--target")
+        .arg("html")
+        .arg("--format")
+        .arg("json")
+        .arg("--pretty")
+        .arg("--input")
+        .arg("kt-mode=query")
+        .arg(&query_file)
+        .arg("<kt-meta>")
+        .output()
+        .with_context(|| format!("failed to run {}", cli.typst_bin))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        bail!("typst query failed for {}: {stderr}", query_file.display());
+    }
+
+    fs::write(generated_dir.join("metadata.json"), output.stdout)
+        .with_context(|| format!("writing metadata.json"))?;
     Ok(())
 }
 

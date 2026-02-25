@@ -1,22 +1,45 @@
 #let manifest = json("generated/manifest.json")
+#let kt-mode = sys.inputs.at("kt-mode", default: "render")
+#let kt-query-mode = kt-mode == "query"
 #let kt-root-id = sys.inputs.at("kt-note-id", default: none)
 
-// --- Registry ---
+// --- Runtime state ---
 #let kt-registry = state("kt-registry", (:))
-// Forward links: id -> (target1, target2, ...)
-#let kt-links = state("kt-links", (:))
+#let kt-current-source = state("kt-current-source", "")
 #let kt-max-depth = 5
+
+// Query output from `typst query generated/query.typ "<kt-meta>"`
+#let kt-metadata = if kt-query-mode { () } else { json("generated/metadata.json") }
 
 #let note-url(id) = id + ".html"
 
-#let notelink(id, text: none) = {
-  let label = if text == none { id } else { text }
-  link(note-url(id))[#label]
+// Generic metadata marker for future extensibility.
+#let kt-meta(kind, data) = [#metadata((schema: "kt-meta-v1", kind: kind, data: data))<kt-meta>]
+
+#let kt-edge(from, to, relation, mode: none) = {
+  kt-meta("edge", (from: from, to: to, relation: relation, mode: mode))
 }
 
-// Paste registered content by ID, with depth limiting
+#let notelink(id, text: none) = {
+  let label = if text == none { id } else { text }
+  if kt-query-mode {
+    context {
+      let source = kt-current-source.get()
+      if source == "" { [] } else { kt-edge(source, id, "notelink") }
+    }
+  } else {
+    link(note-url(id))[#label]
+  }
+}
+
+// Paste registered content by ID, with depth limiting.
 #let transclude(id, mode: "inline", depth: kt-max-depth) = {
-  if mode == "open" {
+  if kt-query-mode {
+    context {
+      let source = kt-current-source.get()
+      if source == "" { [] } else { kt-edge(source, id, "transclude", mode: mode) }
+    }
+  } else if mode == "open" {
     html.elem("kt-transclusion-open")[
       #notelink(id, text: "Open: " + id)
     ]
@@ -54,15 +77,26 @@
 }
 
 #let kt-backlinks(id) = {
-  context {
-    let links = kt-links.get()
-    // Invert: find all source ids whose link list contains id
-    let bl = links.pairs().filter(pair => id in pair.last()).map(pair => pair.first())
-    if bl.len() > 0 {
+  if kt-query-mode {
+    []
+  } else {
+    let edges = kt-metadata.filter(entry =>
+      entry.func == "metadata" and
+      entry.value.schema == "kt-meta-v1" and
+      entry.value.kind == "edge" and
+      entry.value.data.to == id
+    )
+    let backlink-map = edges.fold((:), (acc, entry) => {
+      let source = entry.value.data.from
+      acc.insert(source, true)
+      acc
+    })
+    let backlinks = backlink-map.pairs().map(pair => pair.first())
+    if backlinks.len() > 0 {
       html.elem("kt-backlinks")[
         #html.elem("kt-backlinks-header")[Backlinks]
         #html.elem("kt-backlinks-list")[
-          #for source in bl {
+          #for source in backlinks {
             html.elem("kt-backlink-item")[
               #notelink(source)
             ]
@@ -73,35 +107,29 @@
   }
 }
 
-// Register a note's body closure and scan for links
-#let kt-note(id: "", title: "", tags: (), body) = {
+// Register a note's body closure into the runtime registry.
+#let kt-note(id: "", title: "", tags: (), author: "", date: "", body) = {
   kt-registry.update(r => {
     r.insert(id, body)
     r
   })
-  // Scan body for outgoing links
-  {
-    let scan-transclude = (target, ..args) => {
-      kt-links.update(m => {
-        let existing = m.at(id, default: ())
-        if target not in existing { existing.push(target) }
-        m.insert(id, existing)
-        m
-      })
+
+  if kt-query-mode {
+    kt-meta("note", (id: id, title: title, tags: tags, author: author, date: date))
+    for tag in tags {
+      kt-meta("tag", (id: id, title: title, tag: tag, author: author, date: date))
     }
-    html.elem("template", attrs: (data-kt-scan: "true"))[
-      #body(scan-transclude)
-    ]
-  }
-  // If this note is the root (being compiled directly), render it
-  if id == kt-root-id {
-    // Include all other notes to populate registry
+    // Emit metadata markers from this note body for `typst query`.
+    kt-current-source.update(_ => id)
+    body((target, ..args) => transclude(target, ..args))
+    kt-current-source.update(_ => "")
+  } else if id == kt-root-id {
+    // Include all other notes to populate registry before rendering this root.
     for entry in manifest {
       if entry.id != id {
         include entry.source
       }
     }
-    // Render page
     html.elem("link", attrs: (rel: "stylesheet", href: "site.css"))
     html.elem("kt-page", attrs: (data-note-id: id))[
       #html.elem("kt-article-header")[
