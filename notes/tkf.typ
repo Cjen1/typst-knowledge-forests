@@ -2,9 +2,10 @@
 // Copy this file into your notes directory and #import "tkf.typ": *
 //
 // Public API:
-//   #kt-note(id, title, tags, author, date, body)  — Define a note (id = filepath, auto-set by CLI)
+//   #kt-note(id, title, tags, author, date, api => [...])  — Define a note (id = filepath, auto-set by CLI)
 //   #notelink("notes/foo.typ", text: none)           — Link to another note by path
-//   #transclude("notes/foo.typ", mode: "inline")     — Embed another note's content
+//   #let transclude = api.transclude
+//   #transclude("notes/foo.typ", mode: "inline")      — Embed another note's content
 //     modes:
 //       "inline"       — Expand the note body in place (recursive, depth-limited)
 //       "title-inline" — Like inline but wrapped as a titled transclusion

@@ -1,7 +1,8 @@
 #import "tkf.typ": *
-#kt-note(id: "notes/inf-a.typ", title: "Inf-a", tags: (), author: "demo", date: "2026-01-05", kt => [
+#kt-note(id: "notes/inf-a.typ", title: "Inf-a", tags: (), author: "demo", date: "2026-01-05", api => [
+#let transclude = api.transclude
 
 Some text
 
-#(kt.transclude)("notes/inf-b.typ", mode:"inline")
+#transclude("notes/inf-b.typ", mode:"inline")
 ])

@@ -1,10 +1,10 @@
 #import "tkf.typ": *
-#kt-note(id: "notes/metadata-demo.typ", title: "Metadata Demo", tags: ("demo", "metadata"), author: "cj", date: "2026-02-25", kt => [
+#kt-note(id: "notes/metadata-demo.typ", title: "Metadata Demo", tags: ("demo", "metadata"), author: "cj", date: "2026-02-25", api => [
 
-  This page demonstrates userspace queries over `kt.metadata` and `kt.manifest`.
+  This page demonstrates userspace queries over `api.metadata` and `api.manifest`.
 
   #let note-meta = (
-    kt.metadata
+    api.metadata
       .filter(entry => entry.func == "metadata" and entry.value.schema == "kt-meta-v1" and entry.value.kind == "note")
       .map(entry => entry.value.data)
   )
@@ -46,6 +46,6 @@
     }]
   }
 
-  == Corpus size from kt.manifest
-  #kt.manifest.len() notes
+  == Corpus size from api.manifest
+  #api.manifest.len() notes
 ])

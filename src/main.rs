@@ -133,7 +133,7 @@ fn run_new(title: &str, dir: &Path, no_edit: bool) -> Result<()> {
     }
 
     let content = format!(
-        "#import \"tkf.typ\": *\n#kt-note(id: \"{path}\", title: \"{title}\", tags: (), author: \"\", date: \"{today}\", _ => [\n\n])\n",
+        "#import \"tkf.typ\": *\n#kt-note(id: \"{path}\", title: \"{title}\", tags: (), author: \"\", date: \"{today}\", api => [\n#let transclude = api.transclude\n\n])\n",
         path = file_path.display(),
         title = title,
         today = today,
