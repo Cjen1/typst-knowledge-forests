@@ -42,6 +42,9 @@ enum StepCommand {
         /// Directory to create the note in (defaults to --input-dir).
         #[arg(long)]
         dir: Option<PathBuf>,
+        /// Don't open $EDITOR after creating the note.
+        #[arg(long)]
+        no_edit: bool,
     },
 }
 
@@ -56,9 +59,9 @@ fn main() -> Result<()> {
     let command = cli.command.clone().unwrap_or(StepCommand::Build);
 
     match command {
-        StepCommand::New { title, dir } => {
+        StepCommand::New { title, dir, no_edit } => {
             let target_dir = dir.unwrap_or_else(|| cli.input_dir.clone());
-            run_new(&title, &target_dir)?;
+            run_new(&title, &target_dir, no_edit)?;
         }
         _ => {
             let tkf_path = cli.input_dir.join("tkf.typ");
@@ -84,7 +87,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn run_new(title: &str, dir: &Path) -> Result<()> {
+fn run_new(title: &str, dir: &Path, no_edit: bool) -> Result<()> {
     fs::create_dir_all(dir)
         .with_context(|| format!("creating {}", dir.display()))?;
 
@@ -140,6 +143,16 @@ fn run_new(title: &str, dir: &Path) -> Result<()> {
         .with_context(|| format!("writing {}", file_path.display()))?;
 
     println!("Created {}", file_path.display());
+
+    if !no_edit {
+        if let Ok(editor) = std::env::var("EDITOR") {
+            Command::new(&editor)
+                .arg(&file_path)
+                .status()
+                .with_context(|| format!("failed to open {} with {}", file_path.display(), editor))?;
+        }
+    }
+
     Ok(())
 }
 
