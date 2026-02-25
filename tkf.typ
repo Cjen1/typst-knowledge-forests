@@ -1,4 +1,4 @@
-#let manifest = json("generated/manifest.json")
+#let manifest = json("../generated/manifest.json")
 #let kt-mode = sys.inputs.at("kt-mode", default: "render")
 #let kt-query-mode = kt-mode == "query"
 #let kt-root-id = sys.inputs.at("kt-note-id", default: none)
@@ -9,7 +9,7 @@
 #let kt-max-depth = 5
 
 // Query output from `typst query generated/query.typ "<kt-meta>"`
-#let kt-metadata = if kt-query-mode { () } else { json("generated/metadata.json") }
+#let kt-metadata = if kt-query-mode { () } else { json("../generated/metadata.json") }
 #let kt-manifest = if kt-query-mode { () } else { manifest }
 
 #let note-url(id) = id + ".html"

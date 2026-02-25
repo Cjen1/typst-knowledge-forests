@@ -31,11 +31,11 @@ fn graph_generates_manifest_json() {
 
     write_file(
         &notes_dir.join("alpha.typ"),
-        "#import \"../site.typ\": *\n#kt-note(id: \"alpha\", title: \"Alpha\", tags: (\"a\",), _ => [\nAlpha body.\n])\n",
+        "#import \"tkf.typ\": *\n#kt-note(id: \"alpha\", title: \"Alpha\", tags: (\"a\",), _ => [\nAlpha body.\n])\n",
     );
     write_file(
         &notes_dir.join("beta.typ"),
-        "#import \"../site.typ\": *\n#kt-note(id: \"beta\", title: \"Beta\", tags: (\"b\",), _ => [\nBeta body.\n])\n",
+        "#import \"tkf.typ\": *\n#kt-note(id: \"beta\", title: \"Beta\", tags: (\"b\",), _ => [\nBeta body.\n])\n",
     );
     write_file(
         &fake_typst,
@@ -90,7 +90,7 @@ fn build_passes_kt_note_id_input() {
 
     write_file(
         &notes_dir.join("alpha.typ"),
-        "#import \"../site.typ\": *\n#kt-note(id: \"alpha\", title: \"Alpha\", tags: (\"a\",), _ => [\nAlpha body.\n])\n",
+        "#import \"tkf.typ\": *\n#kt-note(id: \"alpha\", title: \"Alpha\", tags: (\"a\",), _ => [\nAlpha body.\n])\n",
     );
 
     write_file(

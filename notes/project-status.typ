@@ -1,4 +1,4 @@
-#import "../site.typ": *
+#import "tkf.typ": *
 #kt-note(id: "architecture", title: "Architecture Index", tags: ("planning", "architecture"), author: "cj", date: "2026-02-05", kt => [
 
 This is the architecture subindex.

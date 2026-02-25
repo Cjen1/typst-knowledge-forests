@@ -13,8 +13,20 @@
           inherit system;
           config.allowUnfree = true;
         };
+
+        typst-knowledge-forests = pkgs.rustPlatform.buildRustPackage {
+          pname = "typst-knowledge-forests";
+          version = "0.1.0";
+          src = ./.;
+          cargoLock.lockFile = ./Cargo.lock;
+          nativeCheckInputs = [ pkgs.typst pkgs.bash ];
+          # Integration tests use #!/usr/bin/env bash which doesn't work in the Nix sandbox
+          doCheck = false;
+        };
       in
       {
+        packages.default = typst-knowledge-forests;
+
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             typst

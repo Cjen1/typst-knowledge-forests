@@ -47,6 +47,14 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
     let command = cli.command.unwrap_or(StepCommand::Build);
 
+    let tkf_path = cli.input_dir.join("tkf.typ");
+    if !tkf_path.exists() {
+        bail!(
+            "missing tkf.typ in {} — copy it from the typst-knowledge-forests repo",
+            cli.input_dir.display()
+        );
+    }
+
     match command {
         StepCommand::Build => {
             run_graph(&cli)?;
@@ -156,6 +164,9 @@ fn discover_notes(input_dir: &Path) -> Result<Vec<NoteEntry>> {
         if path.extension().and_then(|s| s.to_str()) != Some("typ") {
             continue;
         }
+        if path.file_name().and_then(|s| s.to_str()) == Some("tkf.typ") {
+            continue;
+        }
 
         let file_name = path
             .file_name()
@@ -189,17 +200,16 @@ fn discover_notes(input_dir: &Path) -> Result<Vec<NoteEntry>> {
 
 fn write_manifest_json(
     generated_dir: &Path,
-    input_dir: &Path,
+    _input_dir: &Path,
     notes: &[NoteEntry],
 ) -> Result<()> {
     let entries: Vec<String> = notes
         .iter()
         .map(|n| {
-            let source = input_dir.join(&n.file_name);
             format!(
                 "  {{\"id\": {}, \"source\": {}}}",
                 json_string(&n.id),
-                json_string(&source.display().to_string())
+                json_string(&n.file_name)
             )
         })
         .collect();

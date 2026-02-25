@@ -1,4 +1,4 @@
-#import "../site.typ": *
+#import "tkf.typ": *
 #kt-note(id: "project-todos", title: "Project TODOs", tags: ("planning", "todo"), author: "cj", date: "2026-02-06", _ => [
 
 - Remove generated `transclusions.typ` by moving transclusion resolution into Typst runtime registration/loading.

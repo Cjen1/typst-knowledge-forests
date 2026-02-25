@@ -1,4 +1,4 @@
-#import "../site.typ": *
+#import "tkf.typ": *
 #kt-note(id: "metadata-demo", title: "Metadata Demo", tags: ("demo", "metadata"), author: "cj", date: "2026-02-25", kt => [
 
   This page demonstrates userspace queries over `kt.metadata` and `kt.manifest`.
