@@ -9,7 +9,7 @@ fn temp_test_dir(name: &str) -> PathBuf {
         .duration_since(UNIX_EPOCH)
         .expect("time")
         .as_nanos();
-    dir.push(format!("typst-knowledge-trees-{name}-{}-{nanos}", std::process::id()));
+    dir.push(format!("tkf-{name}-{}-{nanos}", std::process::id()));
     fs::create_dir_all(&dir).expect("create temp dir");
     dir
 }
@@ -53,7 +53,7 @@ fn graph_generates_manifest_json() {
         fs::set_permissions(&fake_typst, perms).expect("chmod");
     }
 
-    let status = Command::new(env!("CARGO_BIN_EXE_typst-knowledge-trees"))
+    let status = Command::new(env!("CARGO_BIN_EXE_tkf"))
         .current_dir(&dir)
         .arg("--input-dir")
         .arg("notes")
@@ -109,7 +109,7 @@ fn build_passes_kt_note_id_input() {
         fs::set_permissions(&fake_typst, perms).expect("chmod");
     }
 
-    let status = Command::new(env!("CARGO_BIN_EXE_typst-knowledge-trees"))
+    let status = Command::new(env!("CARGO_BIN_EXE_tkf"))
         .current_dir(&dir)
         .arg("--input-dir")
         .arg("notes")

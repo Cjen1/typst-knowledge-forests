@@ -15,7 +15,7 @@
         };
 
         typst-knowledge-forests = pkgs.rustPlatform.buildRustPackage {
-          pname = "typst-knowledge-forests";
+          pname = "tkf";
           version = "0.1.0";
           src = ./.;
           cargoLock.lockFile = ./Cargo.lock;

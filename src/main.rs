@@ -27,7 +27,7 @@ struct Cli {
     command: Option<StepCommand>,
 }
 
-#[derive(Subcommand, Debug, Clone, Copy)]
+#[derive(Subcommand, Debug, Clone)]
 enum StepCommand {
     /// Run manifest generation + rendering.
     Build,
@@ -35,6 +35,14 @@ enum StepCommand {
     Graph,
     /// Only render HTML from existing manifest.
     Render,
+    /// Create a new note file.
+    New {
+        /// Title for the new note.
+        title: String,
+        /// Directory to create the note in (defaults to --input-dir).
+        #[arg(long)]
+        dir: Option<PathBuf>,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -45,25 +53,93 @@ struct NoteEntry {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let command = cli.command.unwrap_or(StepCommand::Build);
-
-    let tkf_path = cli.input_dir.join("tkf.typ");
-    if !tkf_path.exists() {
-        bail!(
-            "missing tkf.typ in {} — copy it from the typst-knowledge-forests repo",
-            cli.input_dir.display()
-        );
-    }
+    let command = cli.command.clone().unwrap_or(StepCommand::Build);
 
     match command {
-        StepCommand::Build => {
-            run_graph(&cli)?;
-            run_render(&cli)?;
+        StepCommand::New { title, dir } => {
+            let target_dir = dir.unwrap_or_else(|| cli.input_dir.clone());
+            run_new(&title, &target_dir)?;
         }
-        StepCommand::Graph => run_graph(&cli)?,
-        StepCommand::Render => run_render(&cli)?,
+        _ => {
+            let tkf_path = cli.input_dir.join("tkf.typ");
+            if !tkf_path.exists() {
+                bail!(
+                    "missing tkf.typ in {} — copy it from the typst-knowledge-forests repo",
+                    cli.input_dir.display()
+                );
+            }
+
+            match command {
+                StepCommand::Build => {
+                    run_graph(&cli)?;
+                    run_render(&cli)?;
+                }
+                StepCommand::Graph => run_graph(&cli)?,
+                StepCommand::Render => run_render(&cli)?,
+                StepCommand::New { .. } => unreachable!(),
+            }
+        }
     }
 
+    Ok(())
+}
+
+fn run_new(title: &str, dir: &Path) -> Result<()> {
+    fs::create_dir_all(dir)
+        .with_context(|| format!("creating {}", dir.display()))?;
+
+    let today = {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+        let days = secs / 86400;
+        // Convert days since epoch to yyyy-mm-dd
+        let mut y = 1970i32;
+        let mut rem = days as i32;
+        loop {
+            let year_days = if y % 4 == 0 && (y % 100 != 0 || y % 400 == 0) { 366 } else { 365 };
+            if rem < year_days { break; }
+            rem -= year_days;
+            y += 1;
+        }
+        let leap = y % 4 == 0 && (y % 100 != 0 || y % 400 == 0);
+        let month_days = [31, if leap { 29 } else { 28 }, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        let mut m = 0usize;
+        while m < 12 && rem >= month_days[m] {
+            rem -= month_days[m];
+            m += 1;
+        }
+        format!("{:04}-{:02}-{:02}", y, m + 1, rem + 1)
+    };
+
+    let slug: String = title
+        .to_lowercase()
+        .chars()
+        .map(|c| if c.is_alphanumeric() { c } else { '-' })
+        .collect::<String>()
+        .split('-')
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join("-");
+
+    let id = format!("{today}-{slug}");
+    let file_name = format!("{id}.typ");
+    let file_path = dir.join(&file_name);
+
+    if file_path.exists() {
+        bail!("{} already exists", file_path.display());
+    }
+
+    let content = format!(
+        "#import \"tkf.typ\": *\n#kt-note(id: \"{id}\", title: \"{title}\", tags: (), author: \"\", date: \"{today}\", _ => [\n\n])\n",
+        id = id,
+        title = title,
+        today = today,
+    );
+
+    fs::write(&file_path, content)
+        .with_context(|| format!("writing {}", file_path.display()))?;
+
+    println!("Created {}", file_path.display());
     Ok(())
 }
 

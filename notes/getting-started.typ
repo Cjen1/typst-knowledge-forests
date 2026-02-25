@@ -7,9 +7,9 @@ To use typst-knowledge-forests in your own project:
 
 + Each note file should begin with `#import "tkf.typ": *` and define a single `#kt-note(...)`.
 
-+ Install the CLI (`typst-knowledge-trees`) and ensure `typst` is on your PATH.
++ Install the CLI (`tkf`) and ensure `typst` is on your PATH.
 
-+ Run `typst-knowledge-trees build` from your project root. The CLI will:
++ Run `tkf build` from your project root. The CLI will:
   - Scan `notes/` for `.typ` files (excluding `tkf.typ`)
   - Generate `generated/manifest.json`, `generated/query.typ`, and `generated/metadata.json`
   - Compile each note to HTML in `dist/`
