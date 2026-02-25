@@ -1,5 +1,5 @@
 #import "../site.typ": *
-#kt-note(id: "constraints", title: "Project Constraints", tags: ("planning", "constraints"), _ => [
+#kt-note(id: "constraints", title: "Project Constraints", tags: ("planning", "constraints"), author: "cj", date: "2026-01-20", _ => [
 
 - Single command should run the full pipeline (`build`).
 - `graph` and `render` should still work independently.

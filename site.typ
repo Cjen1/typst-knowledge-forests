@@ -10,6 +10,7 @@
 
 // Query output from `typst query generated/query.typ "<kt-meta>"`
 #let kt-metadata = if kt-query-mode { () } else { json("generated/metadata.json") }
+#let kt-manifest = if kt-query-mode { () } else { manifest }
 
 #let note-url(id) = id + ".html"
 
@@ -54,7 +55,14 @@
       let reg = kt-registry.get()
       if id in reg {
         html.elem("kt-transclusion-inline")[
-          #{ let body-fn = reg.at(id); body-fn((target, ..args) => transclude(target, depth: depth - 1, ..args)) }
+          #{
+            let body-fn = reg.at(id)
+            body-fn((
+              transclude: (target, ..args) => transclude(target, depth: depth - 1, ..args),
+              metadata: kt-metadata,
+              manifest: kt-manifest,
+            ))
+          }
         ]
       } else {
         notelink(id)
@@ -65,7 +73,14 @@
       let reg = kt-registry.get()
       if id in reg {
         html.elem("kt-transclusion-title-inline")[
-          #{ let body-fn = reg.at(id); body-fn((target, ..args) => transclude(target, depth: depth - 1, ..args)) }
+          #{
+            let body-fn = reg.at(id)
+            body-fn((
+              transclude: (target, ..args) => transclude(target, depth: depth - 1, ..args),
+              metadata: kt-metadata,
+              manifest: kt-manifest,
+            ))
+          }
         ]
       } else {
         notelink(id)
@@ -121,7 +136,11 @@
     }
     // Emit metadata markers from this note body for `typst query`.
     kt-current-source.update(_ => id)
-    body((target, ..args) => transclude(target, ..args))
+    body((
+      transclude: (target, ..args) => transclude(target, ..args),
+      metadata: kt-metadata,
+      manifest: kt-manifest,
+    ))
     kt-current-source.update(_ => "")
   } else if id == kt-root-id {
     // Include all other notes to populate registry before rendering this root.
@@ -135,7 +154,13 @@
       #html.elem("kt-article-header")[
         #html.elem("kt-article-title")[#title]
       ]
-      #{ body((target, ..args) => transclude(target, ..args)) }
+      #{
+        body((
+          transclude: (target, ..args) => transclude(target, ..args),
+          metadata: kt-metadata,
+          manifest: kt-manifest,
+        ))
+      }
       #kt-backlinks(id)
     ]
   }

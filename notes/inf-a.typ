@@ -1,7 +1,7 @@
 #import "../site.typ": *
-#kt-note(id: "inf-a", title: "Inf-a", tags: (), transclude => [
+#kt-note(id: "inf-a", title: "Inf-a", tags: (), author: "demo", date: "2026-01-05", kt => [
 
 Some text
 
-#transclude("inf-b", mode:"inline")
+#(kt.transclude)("inf-b", mode:"inline")
 ])

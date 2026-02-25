@@ -1,7 +1,7 @@
 #import "../site.typ": *
-#kt-note(id: "typst-machinery", title: "Typst Machinery", tags: ("typst", "rendering"), transclude => [
+#kt-note(id: "typst-machinery", title: "Typst Machinery", tags: ("typst", "rendering"), author: "cj", date: "2026-02-03", kt => [
 
 Typst notes can link to each other with #notelink("backlinks").
 
-#transclude("backlinks", mode: "open")
+#(kt.transclude)("backlinks", mode: "open")
 ])
