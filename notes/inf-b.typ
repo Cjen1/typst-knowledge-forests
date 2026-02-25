@@ -1,7 +1,7 @@
 #import "tkf.typ": *
-#kt-note(id: "inf-b", title: "Inf-b", tags: (), author: "demo", date: "2026-01-06", kt => [
+#kt-note(id: "notes/inf-b.typ", title: "Inf-b", tags: (), author: "demo", date: "2026-01-06", kt => [
 
 Some more text
 
-#(kt.transclude)("inf-a", mode:"inline")
+#(kt.transclude)("notes/inf-a.typ", mode:"inline")
 ])

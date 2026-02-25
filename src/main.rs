@@ -133,8 +133,8 @@ fn run_new(title: &str, dir: &Path, no_edit: bool) -> Result<()> {
     }
 
     let content = format!(
-        "#import \"tkf.typ\": *\n#kt-note(id: \"{id}\", title: \"{title}\", tags: (), author: \"\", date: \"{today}\", _ => [\n\n])\n",
-        id = id,
+        "#import \"tkf.typ\": *\n#kt-note(id: \"{path}\", title: \"{title}\", tags: (), author: \"\", date: \"{today}\", _ => [\n\n])\n",
+        path = file_path.display(),
         title = title,
         today = today,
     );
@@ -201,7 +201,13 @@ fn run_render(cli: &Cli) -> Result<()> {
 
     for note in &notes {
         let source = cli.input_dir.join(&note.file_name);
-        let output = cli.output_dir.join(format!("{}.html", note.id));
+        // Derive output path: notes/foo.typ -> foo.html
+        let html_name = note.file_name.strip_suffix(".typ").unwrap_or(&note.file_name);
+        let output = cli.output_dir.join(format!("{}.html", html_name));
+        if let Some(parent) = output.parent() {
+            fs::create_dir_all(parent)
+                .with_context(|| format!("creating {}", parent.display()))?;
+        }
 
         let status = Command::new(&cli.typst_bin)
             .arg("compile")
@@ -245,7 +251,6 @@ fn discover_notes(input_dir: &Path) -> Result<Vec<NoteEntry>> {
     let mut notes = Vec::new();
     for entry in WalkDir::new(input_dir)
         .min_depth(1)
-        .max_depth(1)
         .into_iter()
         .filter_map(|e| e.ok())
     {
@@ -258,15 +263,15 @@ fn discover_notes(input_dir: &Path) -> Result<Vec<NoteEntry>> {
         }
 
         let file_name = path
-            .file_name()
-            .and_then(|s| s.to_str())
-            .context("invalid UTF-8 file name")?
+            .strip_prefix(input_dir)
+            .context("path not under input dir")?
+            .to_str()
+            .context("invalid UTF-8 path")?
             .to_string();
 
         let id = path
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .context("invalid UTF-8 file stem")?
+            .to_str()
+            .context("invalid UTF-8 path")?
             .to_string();
 
         notes.push(NoteEntry { id, file_name });

@@ -1,3 +1,19 @@
+// tkf.typ — Typst Knowledge Forests runtime library.
+// Copy this file into your notes directory and #import "tkf.typ": *
+//
+// Public API:
+//   #kt-note(id, title, tags, author, date, body)  — Define a note (id = filepath, auto-set by CLI)
+//   #notelink("notes/foo.typ", text: none)           — Link to another note by path
+//   #transclude("notes/foo.typ", mode: "inline")     — Embed another note's content
+//     modes:
+//       "inline"       — Expand the note body in place (recursive, depth-limited)
+//       "title-inline" — Like inline but wrapped as a titled transclusion
+//       "open"         — Render as a clickable link ("Open: id") without expanding
+//       "title-open"   — Render as a clickable link using the note id as text
+//   #kt-backlinks(id)                               — Render backlinks for a note (auto-called)
+//
+// The CLI (tkf) handles build orchestration; this file is the Typst-side runtime.
+
 #let manifest = json("../generated/manifest.json")
 #let kt-mode = sys.inputs.at("kt-mode", default: "render")
 #let kt-query-mode = kt-mode == "query"
@@ -12,7 +28,15 @@
 #let kt-metadata = if kt-query-mode { () } else { json("../generated/metadata.json") }
 #let kt-manifest = if kt-query-mode { () } else { manifest }
 
-#let note-url(id) = id + ".html"
+#let note-url(id) = {
+  // id is a filepath like "notes/foo.typ" or "notes/sub/foo.typ"
+  // Strip the leading directory (notes/) and swap .typ -> .html
+  let without-ext = id.trim(".typ", at: end)
+  let parts = without-ext.split("/")
+  // Drop the first component (input dir) to get the relative path
+  let rel = parts.slice(1).join("/")
+  rel + ".html"
+}
 
 // Generic metadata marker for future extensibility.
 #let kt-meta(kind, data) = [#metadata((schema: "kt-meta-v1", kind: kind, data: data))<kt-meta>]
@@ -134,7 +158,6 @@
     for tag in tags {
       kt-meta("tag", (id: id, title: title, tag: tag, author: author, date: date))
     }
-    // Emit metadata markers from this note body for `typst query`.
     kt-current-source.update(_ => id)
     body((
       transclude: (target, ..args) => transclude(target, ..args),

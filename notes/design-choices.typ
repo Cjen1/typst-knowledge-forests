@@ -1,5 +1,5 @@
 #import "tkf.typ": *
-#kt-note(id: "design-choices", title: "Design Choices", tags: ("planning", "design"), author: "cj", date: "2026-01-22", _ => [
+#kt-note(id: "notes/design-choices.typ", title: "Design Choices", tags: ("planning", "design"), author: "cj", date: "2026-01-22", _ => [
 
 - Rust CLI orchestrates graph + render steps.
 - Notes are authored in Typst with `#kt-note`, `#notelink`, and `#transclude`.

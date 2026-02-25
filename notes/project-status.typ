@@ -1,13 +1,13 @@
 #import "tkf.typ": *
-#kt-note(id: "architecture", title: "Architecture Index", tags: ("planning", "architecture"), author: "cj", date: "2026-02-05", kt => [
+#kt-note(id: "notes/project-status.typ", title: "Architecture Index", tags: ("planning", "architecture"), author: "cj", date: "2026-02-05", kt => [
 
 This is the architecture subindex.
 
-- #notelink("constraints")
-- #notelink("design-choices")
-- #notelink("project-todos")
+- #notelink("notes/constraints.typ")
+- #notelink("notes/design-choices.typ")
+- #notelink("notes/project-todos.typ")
 
-#(kt.transclude)("constraints", mode: "title-open")
-#(kt.transclude)("design-choices", mode: "title-open")
-#(kt.transclude)("project-todos", mode: "title-open")
+#(kt.transclude)("notes/constraints.typ", mode: "title-open")
+#(kt.transclude)("notes/design-choices.typ", mode: "title-open")
+#(kt.transclude)("notes/project-todos.typ", mode: "title-open")
 ])
