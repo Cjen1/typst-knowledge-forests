@@ -2,15 +2,12 @@
 // Copy this file into your notes directory and #import "tkf.typ": *
 //
 // Public API:
-//   #kt-note(id, title, tags, author, date, api => [...])  — Define a note (id = filepath, auto-set by CLI)
+//   #kt-note(id, title, tags, author, date, body)  — Define a note (id = filepath, auto-set by CLI)
 //   #notelink("notes/foo.typ", text: none)           — Link to another note by path
-//   #let transclude = api.transclude
-//   #transclude("notes/foo.typ", mode: "inline")      — Embed another note's content
+//   #transclude("notes/foo.typ", mode: "inline")     — Embed another note's content
 //     modes:
 //       "inline"       — Expand the note body in place (recursive, depth-limited)
-//       "title-inline" — Like inline but wrapped as a titled transclusion
-//       "open"         — Render as a clickable link ("Open: id") without expanding
-//       "title-open"   — Render as a clickable link using the note id as text
+//       "title-link"   — Only writes the title of the linked article
 //   #kt-backlinks(id)                               — Render backlinks for a note (auto-called)
 //
 // The CLI (tkf) handles build orchestration; this file is the Typst-side runtime.
@@ -59,60 +56,55 @@
 }
 
 // Paste registered content by ID, with depth limiting.
+// mode: {inline, title-link}
 #let transclude(id, mode: "inline", depth: kt-max-depth) = {
   if kt-query-mode {
     context {
       let source = kt-current-source.get()
       if source == "" { [] } else { kt-edge(source, id, "transclude", mode: mode) }
     }
-  } else if mode == "open" {
-    html.elem("kt-transclusion-open")[
-      #notelink(id, text: "Open: " + id)
-    ]
-  } else if mode == "title-open" {
-    html.elem("kt-transclusion-title-open")[
-      #notelink(id)
-    ]
-  } else if depth <= 0 {
-    notelink(id)
-  } else if mode == "inline" {
-    context {
-      let reg = kt-registry.get()
-      if id in reg {
-        html.elem("kt-transclusion-inline")[
-          #{
-            let body-fn = reg.at(id)
-            body-fn((
-              transclude: (target, ..args) => transclude(target, depth: depth - 1, ..args),
-              metadata: kt-metadata,
-              manifest: kt-manifest,
-            ))
-          }
-        ]
-      } else {
-        notelink(id)
-      }
-    }
-  } else if mode == "title-inline" {
-    context {
-      let reg = kt-registry.get()
-      if id in reg {
-        html.elem("kt-transclusion-title-inline")[
-          #{
-            let body-fn = reg.at(id)
-            body-fn((
-              transclude: (target, ..args) => transclude(target, depth: depth - 1, ..args),
-              metadata: kt-metadata,
-              manifest: kt-manifest,
-            ))
-          }
-        ]
-      } else {
-        notelink(id)
-      }
-    }
   } else {
-    [Unknown transclusion mode '#mode' for #id]
+    html.elem("kt-transclusion")[
+      #html.elem("kt-transclusion-title-div")[
+        #html.elem("kt-transclusion-title")[
+          #{
+            let notes = kt-metadata.filter(entry =>
+              entry.func == "metadata" and
+              entry.value.schema == "kt-meta-v1" and
+              entry.value.kind == "note" and
+              entry.value.data.id == id
+            )
+            if notes.len() > 0 { notes.first().value.data.title } else { id }
+          }
+        ]
+        #html.elem("kt-transclusion-link")[#notelink(id)]
+      ]
+      #{
+        if depth > 0 {
+          if mode == "inline" {
+            context {
+              let reg = kt-registry.get()
+              if id in reg {
+                html.elem("kt-transclusion-inline")[
+                  #{
+                    let body-fn = reg.at(id)
+                    body-fn((
+                      transclude: (target, ..args) => transclude(target, depth: depth - 1, ..args),
+                      metadata: kt-metadata,
+                      manifest: kt-manifest,
+                    ))
+                  }
+                ]
+              } else {
+                [Unknown mode (#mode) for transclusion of #id]
+              }
+            }
+          }
+        } else {
+          notelink(id)
+        }
+      }
+    ]
   }
 }
 
@@ -156,9 +148,6 @@
 
   if kt-query-mode {
     kt-meta("note", (id: id, title: title, tags: tags, author: author, date: date))
-    for tag in tags {
-      kt-meta("tag", (id: id, title: title, tag: tag, author: author, date: date))
-    }
     kt-current-source.update(_ => id)
     body((
       transclude: (target, ..args) => transclude(target, ..args),
@@ -175,8 +164,11 @@
     }
     html.elem("link", attrs: (rel: "stylesheet", href: "/site.css"))
     html.elem("kt-page", attrs: (data-note-id: id))[
-      #html.elem("kt-article-header")[
-        #html.elem("kt-article-title")[#title]
+      #html.elem("kt-title-div")[
+        #html.elem("kt-note-title")[
+          #title
+        ]
+        #html.elem("kt-transclusion-link")[#notelink(id)]
       ]
       #{
         body((

@@ -1,22 +1,11 @@
 :root {
-  color-scheme: light dark;
-  --kt-accent: #2563eb;
-  --kt-accent-light: #dbeafe;
-  --kt-border: #e5e7eb;
-  --kt-bg-subtle: #f9fafb;
+  color-scheme: light;
+  --kt-accent: #6b7280;
+  --kt-accent-light: #f3f4f6;
+  --kt-border: #d1d5db;
+  --kt-bg-subtle: #fafafa;
   --kt-text: #1f2937;
-  --kt-text-muted: #6b7280;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --kt-accent: #60a5fa;
-    --kt-accent-light: #1e3a5f;
-    --kt-border: #374151;
-    --kt-bg-subtle: #111827;
-    --kt-text: #f3f4f6;
-    --kt-text-muted: #9ca3af;
-  }
+  --kt-text-muted: #9ca3af;
 }
 
 body {
@@ -35,15 +24,18 @@ kt-page {
   padding: 2rem 1.5rem 4rem;
 }
 
-/* Article header & title */
-kt-article-header {
-  display: block;
+/* Page title */
+kt-title-div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
   border-bottom: 2px solid var(--kt-accent);
 }
 
-kt-article-title {
+kt-note-title {
   display: block;
   font-size: 1.75rem;
   font-weight: 700;
@@ -61,32 +53,39 @@ a:hover {
 }
 
 /* Transclusion styles */
-kt-transclusion-inline {
+kt-transclusion {
   display: block;
-  border-left: 3px solid var(--kt-accent);
-  padding: 0.5rem 1rem;
   margin: 1rem 0;
-  background: var(--kt-bg-subtle);
-  border-radius: 0 4px 4px 0;
-}
-
-kt-transclusion-open,
-kt-transclusion-title-open {
-  display: block;
-  margin: 0.75rem 0;
-  padding: 0.5rem 0.75rem;
-  background: var(--kt-bg-subtle);
   border: 1px solid var(--kt-border);
   border-radius: 4px;
+  overflow: hidden;
 }
 
-kt-transclusion-title-inline {
-  display: block;
-  border-left: 3px solid var(--kt-accent);
-  padding: 0.5rem 1rem;
-  margin: 1rem 0;
+kt-transclusion-title-div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
   background: var(--kt-bg-subtle);
-  border-radius: 0 4px 4px 0;
+  border-bottom: 1px solid var(--kt-border);
+}
+
+kt-transclusion-title {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+kt-transclusion-link {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--kt-text-muted);
+}
+
+kt-transclusion-inline {
+  display: block;
+  padding: 0.5rem 1rem;
 }
 
 /* Backlinks */
