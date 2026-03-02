@@ -1,5 +1,5 @@
 #import "tkf.typ": *
-#kt-note(id: "notes/backlinks.typ", title: "Backlinks", tags: ("docs", "features"), author: "cj", date: "2026-02-01", _ => [
+#kt-note(id: "backlinks.typ", title: "Backlinks", tags: ("docs", "features"), author: "cj", date: "2026-02-01", _ => [
 
 Each note automatically displays backlinks: a list of every other note that links to or transcludes it.
 

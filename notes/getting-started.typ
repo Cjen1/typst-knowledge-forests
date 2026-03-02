@@ -1,5 +1,5 @@
 #import "tkf.typ": *
-#kt-note(id: "notes/getting-started.typ", title: "Getting Started", tags: ("docs", "usage"), author: "cj", date: "2026-02-25", _ => [
+#kt-note(id: "getting-started.typ", title: "Getting Started", tags: ("docs", "usage"), author: "cj", date: "2026-02-25", _ => [
 
 To use typst-knowledge-forests in your own project:
 

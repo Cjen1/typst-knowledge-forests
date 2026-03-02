@@ -1,5 +1,5 @@
 #import "tkf.typ": *
-#kt-note(id: "notes/lazy-evaluation.typ", title: "Lazy Evaluation and Infinite Inclusion", tags: ("docs", "implementation"), author: "cj", date: "2026-03-02", api => [
+#kt-note(id: "lazy-evaluation.typ", title: "Lazy Evaluation and Infinite Inclusion", tags: ("docs", "implementation"), author: "cj", date: "2026-03-02", api => [
 #let transclude = api.transclude
 
 Using `#include` directly requires that the note forest is a DAG, which cannot be guaranteed.
@@ -10,7 +10,7 @@ The solution is to make the body of a note lazily evaluated by wrapping it in a 
 ```
 kt-note(..., api => [
   #let transclude = api.transclude
-  #transclude("notes/other.typ")
+  #transclude("other.typ")
 ])
 ```
 
@@ -19,6 +19,6 @@ When the depth limit is reached, a `#notelink` is rendered in place of the trans
 
 The following two notes transclude each other, demonstrating that mutual recursion is handled gracefully:
 
-#transclude("notes/inf-a.typ", mode: "inline")
-#transclude("notes/inf-b.typ", mode: "inline")
+#transclude("inf-a.typ", mode: "inline")
+#transclude("inf-b.typ", mode: "inline")
 ])

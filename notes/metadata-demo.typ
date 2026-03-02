@@ -1,5 +1,6 @@
 #import "tkf.typ": *
-#kt-note(id: "notes/metadata-demo.typ", title: "Metadata Demo", tags: ("demo", "metadata"), author: "cj", date: "2026-02-25", api => [
+#kt-note(id: "metadata-demo.typ", title: "Metadata Demo", tags: ("demo", "metadata"), author: "cj", date: "2026-02-25", api => [
+  #let notelink = api.notelink
 
   This page demonstrates userspace queries over `api.metadata` and `api.manifest`.
 

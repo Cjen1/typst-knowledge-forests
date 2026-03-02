@@ -61,7 +61,7 @@ fn main() -> Result<()> {
     match command {
         StepCommand::New { title, dir, no_edit } => {
             let target_dir = dir.unwrap_or_else(|| cli.input_dir.clone());
-            run_new(&title, &target_dir, no_edit)?;
+            run_new(&title, &target_dir, &cli.input_dir, no_edit)?;
         }
         _ => {
             let tkf_path = cli.input_dir.join("tkf.typ");
@@ -87,9 +87,11 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn run_new(title: &str, dir: &Path, no_edit: bool) -> Result<()> {
+fn run_new(title: &str, dir: &Path, input_dir: &Path, no_edit: bool) -> Result<()> {
     fs::create_dir_all(dir)
         .with_context(|| format!("creating {}", dir.display()))?;
+
+    let tkf_import = find_tkf_import(dir, input_dir)?;
 
     let today = {
         use std::time::{SystemTime, UNIX_EPOCH};
@@ -132,9 +134,17 @@ fn run_new(title: &str, dir: &Path, no_edit: bool) -> Result<()> {
         bail!("{} already exists", file_path.display());
     }
 
+    let note_id = file_path
+        .strip_prefix(input_dir)
+        .unwrap_or(&file_path)
+        .to_str()
+        .context("invalid UTF-8 path")?
+        .to_string();
+
     let content = format!(
-        "#import \"tkf.typ\": *\n#kt-note(id: \"{path}\", title: \"{title}\", tags: (), author: \"\", date: \"{today}\", api => [\n#let transclude = api.transclude\n\n])\n",
-        path = file_path.display(),
+        "#import \"{tkf_import}\": *\n#kt-note(id: \"{id}\", title: \"{title}\", tags: (), author: \"\", date: \"{today}\", api => [\n#let transclude = api.transclude\n#let notelink = api.notelink\n\n])\n",
+        tkf_import = tkf_import,
+        id = note_id,
         title = title,
         today = today,
     );
@@ -154,6 +164,44 @@ fn run_new(title: &str, dir: &Path, no_edit: bool) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Walk upward from `target_dir` to `root` looking for `tkf.typ`.
+/// Returns the relative import path (e.g. "../../tkf.typ" or "tkf.typ").
+fn find_tkf_import(target_dir: &Path, root: &Path) -> Result<String> {
+    let target_abs = fs::canonicalize(target_dir)
+        .with_context(|| format!("canonicalizing {}", target_dir.display()))?;
+    let root_abs = fs::canonicalize(root)
+        .with_context(|| format!("canonicalizing {}", root.display()))?;
+
+    let mut cur = target_abs.as_path();
+    loop {
+        let candidate = cur.join("tkf.typ");
+        if candidate.exists() {
+            let depth = target_abs
+                .strip_prefix(cur)
+                .context("target not under tkf.typ directory")?
+                .components()
+                .count();
+            if depth == 0 {
+                return Ok("tkf.typ".to_string());
+            }
+            let prefix: String = std::iter::repeat_n("..", depth).collect::<Vec<_>>().join("/");
+            return Ok(format!("{prefix}/tkf.typ"));
+        }
+        if cur == root_abs {
+            break;
+        }
+        cur = cur
+            .parent()
+            .context("reached filesystem root without finding tkf.typ")?;
+    }
+
+    bail!(
+        "tkf.typ not found between {} and {}",
+        target_dir.display(),
+        root.display()
+    );
 }
 
 fn run_graph(cli: &Cli) -> Result<()> {
@@ -269,10 +317,7 @@ fn discover_notes(input_dir: &Path) -> Result<Vec<NoteEntry>> {
             .context("invalid UTF-8 path")?
             .to_string();
 
-        let id = path
-            .to_str()
-            .context("invalid UTF-8 path")?
-            .to_string();
+        let id = file_name.clone();
 
         notes.push(NoteEntry { id, file_name });
     }

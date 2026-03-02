@@ -68,8 +68,8 @@ fn graph_generates_manifest_json() {
     assert!(status.success());
 
     let manifest = fs::read_to_string(generated_dir.join("manifest.json")).expect("read manifest");
-    assert!(manifest.contains("\"id\": \"notes/alpha.typ\""));
-    assert!(manifest.contains("\"id\": \"notes/beta.typ\""));
+    assert!(manifest.contains("\"id\": \"alpha.typ\""));
+    assert!(manifest.contains("\"id\": \"beta.typ\""));
     assert!(manifest.contains("\"source\": \"alpha.typ\""));
     assert!(generated_dir.join("query.typ").exists());
     assert!(generated_dir.join("metadata.json").exists());
@@ -131,7 +131,7 @@ fn build_passes_kt_note_id_input() {
     let invocations = fs::read_to_string(log_path).expect("read typst invocation log");
     assert!(invocations.contains("query"));
     assert!(invocations.contains("--input kt-mode=query"));
-    assert!(invocations.contains("--input kt-note-id=notes/alpha.typ"));
+    assert!(invocations.contains("--input kt-note-id=alpha.typ"));
     assert!(invocations.contains("--input kt-mode=render"));
     assert!(invocations.contains("--features html"));
     assert!(invocations.contains("--format html"));
