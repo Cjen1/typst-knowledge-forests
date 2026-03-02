@@ -8,7 +8,7 @@ This is the architecture subindex.
 - #notelink("notes/design-choices.typ")
 - #notelink("notes/project-todos.typ")
 
-#transclude("notes/constraints.typ", mode: "title-open")
-#transclude("notes/design-choices.typ", mode: "title-open")
-#transclude("notes/project-todos.typ", mode: "title-open")
+#transclude("notes/constraints.typ", mode: "title-link")
+#transclude("notes/design-choices.typ", mode: "title-link")
+#transclude("notes/project-todos.typ", mode: "title-link")
 ])

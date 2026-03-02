@@ -4,5 +4,5 @@
 
 Typst notes can link to each other with #notelink("notes/backlinks.typ").
 
-#transclude("notes/backlinks.typ", mode: "open")
+#transclude("notes/backlinks.typ", mode: "inline")
 ])

@@ -37,6 +37,7 @@ fn graph_generates_manifest_json() {
         &notes_dir.join("beta.typ"),
         "#import \"tkf.typ\": *\n#kt-note(id: \"beta\", title: \"Beta\", tags: (\"b\",), _ => [\nBeta body.\n])\n",
     );
+    write_file(&notes_dir.join("tkf.typ"), "// stub tkf.typ for test\n");
     write_file(
         &fake_typst,
         &format!(
@@ -67,9 +68,9 @@ fn graph_generates_manifest_json() {
     assert!(status.success());
 
     let manifest = fs::read_to_string(generated_dir.join("manifest.json")).expect("read manifest");
-    assert!(manifest.contains("\"id\": \"alpha\""));
-    assert!(manifest.contains("\"id\": \"beta\""));
-    assert!(manifest.contains("\"source\": \"notes/alpha.typ\""));
+    assert!(manifest.contains("\"id\": \"notes/alpha.typ\""));
+    assert!(manifest.contains("\"id\": \"notes/beta.typ\""));
+    assert!(manifest.contains("\"source\": \"alpha.typ\""));
     assert!(generated_dir.join("query.typ").exists());
     assert!(generated_dir.join("metadata.json").exists());
     let invocations = fs::read_to_string(log_path).expect("read typst invocation log");
@@ -92,6 +93,7 @@ fn build_passes_kt_note_id_input() {
         &notes_dir.join("alpha.typ"),
         "#import \"tkf.typ\": *\n#kt-note(id: \"alpha\", title: \"Alpha\", tags: (\"a\",), _ => [\nAlpha body.\n])\n",
     );
+    write_file(&notes_dir.join("tkf.typ"), "// stub tkf.typ for test\n");
 
     write_file(
         &fake_typst,
@@ -129,7 +131,7 @@ fn build_passes_kt_note_id_input() {
     let invocations = fs::read_to_string(log_path).expect("read typst invocation log");
     assert!(invocations.contains("query"));
     assert!(invocations.contains("--input kt-mode=query"));
-    assert!(invocations.contains("--input kt-note-id=alpha"));
+    assert!(invocations.contains("--input kt-note-id=notes/alpha.typ"));
     assert!(invocations.contains("--input kt-mode=render"));
     assert!(invocations.contains("--features html"));
     assert!(invocations.contains("--format html"));

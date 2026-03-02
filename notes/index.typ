@@ -9,5 +9,5 @@ This is the root note for the Typst knowledge tree scaffold.
 - #notelink("notes/project-status.typ")
 - #notelink("notes/getting-started.typ")
 
-#transclude("notes/typst-machinery.typ", mode: "title-open")
+#transclude("notes/typst-machinery.typ", mode: "title-link")
 ])
