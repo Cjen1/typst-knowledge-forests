@@ -1,11 +1,11 @@
 #import "tkf.typ": *
-#kt-note(id: "getting-started.typ", title: "Getting Started", tags: ("docs", "usage"), author: "cj", date: "2026-02-25", _ => [
+#tkf-note(id: "getting-started.typ", title: "Getting Started", tags: ("docs", "usage"), author: "cj", date: "2026-02-25", _ => [
 
 To use typst-knowledge-forests in your own project:
 
 + Copy `tkf.typ` from this repo into your notes directory (e.g. `notes/tkf.typ`).
 
-+ Each note file should begin with `#import "tkf.typ": *` and define a single `#kt-note(...)`. The body receives `api`; start with `#let transclude = api.transclude` and then call `#transclude("notes/other.typ")`. Note IDs are derived automatically from the file path (e.g. `notes/my-note.typ`), and `#notelink("notes/other.typ")` still creates plain links.
++ Each note file should begin with `#import "tkf.typ": *` and define a single `#tkf-note(...)`. The body receives `api`; start with `#let transclude = api.transclude` and then call `#transclude("notes/other.typ")`. Note IDs are derived automatically from the file path (e.g. `notes/my-note.typ`), and `#notelink("notes/other.typ")` still creates plain links.
 
 + Install the CLI (`tkf`) and ensure `typst` is on your PATH.
 

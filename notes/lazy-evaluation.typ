@@ -1,5 +1,5 @@
 #import "tkf.typ": *
-#kt-note(id: "lazy-evaluation.typ", title: "Lazy Evaluation and Infinite Inclusion", tags: ("docs", "implementation"), author: "cj", date: "2026-03-02", api => [
+#tkf-note(id: "lazy-evaluation.typ", title: "Lazy Evaluation and Infinite Inclusion", tags: ("docs", "implementation"), author: "cj", date: "2026-03-02", api => [
 #let transclude = api.transclude
 
 Using `#include` directly requires that the note forest is a DAG, which cannot be guaranteed.
@@ -8,7 +8,7 @@ Typst eagerly evaluates an included file and hence fails whenever it hits a cycl
 The solution is to make the body of a note lazily evaluated by wrapping it in a lambda:
 
 ```
-kt-note(..., api => [
+tkf-note(..., api => [
   #let transclude = api.transclude
   #transclude("other.typ")
 ])

@@ -31,11 +31,11 @@ fn graph_generates_manifest_json() {
 
     write_file(
         &notes_dir.join("alpha.typ"),
-        "#import \"tkf.typ\": *\n#kt-note(id: \"alpha\", title: \"Alpha\", tags: (\"a\",), _ => [\nAlpha body.\n])\n",
+        "#import \"tkf.typ\": *\n#tkf-note(id: \"alpha\", title: \"Alpha\", tags: (\"a\",), _ => [\nAlpha body.\n])\n",
     );
     write_file(
         &notes_dir.join("beta.typ"),
-        "#import \"tkf.typ\": *\n#kt-note(id: \"beta\", title: \"Beta\", tags: (\"b\",), _ => [\nBeta body.\n])\n",
+        "#import \"tkf.typ\": *\n#tkf-note(id: \"beta\", title: \"Beta\", tags: (\"b\",), _ => [\nBeta body.\n])\n",
     );
     write_file(&notes_dir.join("tkf.typ"), "// stub tkf.typ for test\n");
     write_file(
@@ -75,7 +75,7 @@ fn graph_generates_manifest_json() {
     assert!(generated_dir.join("metadata.json").exists());
     let invocations = fs::read_to_string(log_path).expect("read typst invocation log");
     assert!(invocations.contains("query"));
-    assert!(invocations.contains("--input kt-mode=query"));
+    assert!(invocations.contains("--input tkf-mode=query"));
 
     fs::remove_dir_all(dir).expect("cleanup temp dir");
 }
@@ -91,7 +91,7 @@ fn build_passes_kt_note_id_input() {
 
     write_file(
         &notes_dir.join("alpha.typ"),
-        "#import \"tkf.typ\": *\n#kt-note(id: \"alpha\", title: \"Alpha\", tags: (\"a\",), _ => [\nAlpha body.\n])\n",
+        "#import \"tkf.typ\": *\n#tkf-note(id: \"alpha\", title: \"Alpha\", tags: (\"a\",), _ => [\nAlpha body.\n])\n",
     );
     write_file(&notes_dir.join("tkf.typ"), "// stub tkf.typ for test\n");
 
@@ -130,9 +130,9 @@ fn build_passes_kt_note_id_input() {
 
     let invocations = fs::read_to_string(log_path).expect("read typst invocation log");
     assert!(invocations.contains("query"));
-    assert!(invocations.contains("--input kt-mode=query"));
-    assert!(invocations.contains("--input kt-note-id=alpha.typ"));
-    assert!(invocations.contains("--input kt-mode=render"));
+    assert!(invocations.contains("--input tkf-mode=query"));
+    assert!(invocations.contains("--input tkf-note-id=alpha.typ"));
+    assert!(invocations.contains("--input tkf-mode=render"));
     assert!(invocations.contains("--features html"));
     assert!(invocations.contains("--format html"));
     assert!(generated_dir.join("manifest.json").exists());

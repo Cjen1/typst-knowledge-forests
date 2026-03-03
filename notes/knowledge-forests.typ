@@ -1,5 +1,5 @@
 #import "tkf.typ": *
-#kt-note(id: "knowledge-forests.typ", title: "Knowledge Forests", tags: ("docs", "concept"), author: "cj", date: "2026-03-02", _ => [
+#tkf-note(id: "knowledge-forests.typ", title: "Knowledge Forests", tags: ("docs", "concept"), author: "cj", date: "2026-03-02", _ => [
 
 To summarise the forester manifesto:
 forester is a tool for managing a forest of evergreen notes.

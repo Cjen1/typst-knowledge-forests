@@ -142,7 +142,7 @@ fn run_new(title: &str, dir: &Path, input_dir: &Path, no_edit: bool) -> Result<(
         .to_string();
 
     let content = format!(
-        "#import \"{tkf_import}\": *\n#kt-note(id: \"{id}\", title: \"{title}\", tags: (), author: \"\", date: \"{today}\", api => [\n#let transclude = api.transclude\n#let notelink = api.notelink\n\n])\n",
+        "#import \"{tkf_import}\": *\n#tkf-note(id: \"{id}\", title: \"{title}\", tags: (), author: \"\", date: \"{today}\", api => [\n#let transclude = api.transclude\n#let notelink = api.notelink\n\n])\n",
         tkf_import = tkf_import,
         id = note_id,
         title = title,
@@ -266,9 +266,9 @@ fn run_render(cli: &Cli) -> Result<()> {
             .arg("--format")
             .arg("html")
             .arg("--input")
-            .arg("kt-mode=render")
+            .arg("tkf-mode=render")
             .arg("--input")
-            .arg(format!("kt-note-id={}", note.id))
+            .arg(format!("tkf-note-id={}", note.id))
             .arg(&source)
             .arg(&output)
             .status()
@@ -382,9 +382,9 @@ fn write_metadata_json(cli: &Cli, generated_dir: &Path) -> Result<()> {
         .arg("json")
         .arg("--pretty")
         .arg("--input")
-        .arg("kt-mode=query")
+        .arg("tkf-mode=query")
         .arg(&query_file)
-        .arg("<kt-meta>")
+        .arg("<tkf-meta>")
         .output()
         .with_context(|| format!("failed to run {}", cli.typst_bin))?;
 

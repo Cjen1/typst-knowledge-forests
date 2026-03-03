@@ -1,12 +1,12 @@
 #import "tkf.typ": *
-#kt-note(id: "metadata-demo.typ", title: "Metadata Demo", tags: ("demo", "metadata"), author: "cj", date: "2026-02-25", api => [
+#tkf-note(id: "metadata-demo.typ", title: "Metadata Demo", tags: ("demo", "metadata"), author: "cj", date: "2026-02-25", api => [
   #let notelink = api.notelink
 
   This page demonstrates userspace queries over `api.metadata` and `api.manifest`.
 
   #let note-meta = (
     api.metadata
-      .filter(entry => entry.func == "metadata" and entry.value.schema == "kt-meta-v1" and entry.value.kind == "note")
+      .filter(entry => entry.func == "metadata" and entry.value.schema == "tkf-meta-v1" and entry.value.kind == "note")
       .map(entry => entry.value.data)
   )
 
